@@ -439,16 +439,25 @@ static void render(void) {
 }
 
 static void tick_cb(struct k_work *work) {
-    if (zmk_activity_get_state() != ZMK_ACTIVITY_ACTIVE) {
-        k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work, K_MSEC(1000));
-        return;
+    /*
+     * The LED/pet work item is also present when testing ZMK's built-in
+     * status screen. In that configuration there is no custom image object.
+     */
+    if (img != NULL) {
+        if (zmk_activity_get_state() == ZMK_ACTIVITY_ACTIVE) {
+            pet_tick();
+            render();
+            lv_obj_invalidate(img);
+            k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work,
+                                        K_MSEC(TICK_MS));
+            return;
+        }
     }
-    pet_tick();
-    render();
-    lv_obj_invalidate(img);
-    k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work, K_MSEC(TICK_MS));
+
+    k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work, K_MSEC(1000));
 }
 
+#if defined(CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
 lv_obj_t *zmk_display_status_screen(void) {
     lv_color_t ink = INVERT_COLORS ? lv_color_white() : lv_color_black();
     lv_color_t bg = INVERT_COLORS ? lv_color_black() : lv_color_white();
@@ -469,6 +478,7 @@ lv_obj_t *zmk_display_status_screen(void) {
     k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work, K_MSEC(TICK_MS));
     return screen;
 }
+#endif /* CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM */
 
 static int wowpad_init() {
     k_work_init_delayable(&led_work, led_work_fn);
