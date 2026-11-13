@@ -69,5 +69,6 @@
         segment-remap;
         com-invdir;
         prechargep = <0x22>;
+        status = "okay";
     };
 };
