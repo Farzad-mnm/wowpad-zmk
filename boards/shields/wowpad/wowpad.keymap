@@ -24,8 +24,8 @@
                 &bt BT_CLR &kp O  &trans  &trans
                 &trans     &kp C  &kp P   &trans
                 &kp F1     &kp F2 &kp F3  &kp F4  &kp F5
-                &trans &rgb_ug RGB_TOG &rgb_ug RGB_BRI &rgb_ug RGB_BRD &trans
-                &trans &rgb_ug RGB_EFF &trans &trans &trans
+                &trans &none &none &none &trans
+                &trans &none &none &none &trans
                 &trans     &trans &trans          &trans
                                                   &trans
             >;
