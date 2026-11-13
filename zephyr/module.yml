@@ -1,3 +1,6 @@
+name: zmk-keyboard-wowpad
 build:
+  cmake: .
+  kconfig: Kconfig
   settings:
     board_root: .
