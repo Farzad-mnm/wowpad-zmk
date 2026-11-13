@@ -439,22 +439,15 @@ static void render(void) {
 }
 
 static void tick_cb(struct k_work *work) {
-    /*
-     * The LED/pet work item is also present when testing ZMK's built-in
-     * status screen. In that configuration there is no custom image object.
-     */
-    if (img != NULL) {
-        if (zmk_activity_get_state() == ZMK_ACTIVITY_ACTIVE) {
-            pet_tick();
-            render();
-            lv_obj_invalidate(img);
-            k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work,
-                                        K_MSEC(TICK_MS));
-            return;
-        }
+    if (img == NULL || zmk_activity_get_state() != ZMK_ACTIVITY_ACTIVE) {
+        k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work, K_MSEC(1000));
+        return;
     }
 
-    k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work, K_MSEC(1000));
+    pet_tick();
+    render();
+    lv_obj_invalidate(img);
+    k_work_reschedule_for_queue(zmk_display_work_q(), &tick_work, K_MSEC(TICK_MS));
 }
 
 #if defined(CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
