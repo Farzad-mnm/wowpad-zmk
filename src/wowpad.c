@@ -341,11 +341,11 @@ static void pet_tick(void) {
 static void draw_pet(void) {
     for (int i = 0; i < 3; i++) {
         if (poops[i].on) {
-            art(poops[i].x, poops[i].y, ART_POOP, 2, true);
+            art_scaled(poops[i].x, poops[i].y, ART_POOP, 2, 2, true);
         }
     }
     if (pet.food) {
-        art(pet.fx, pet.fy, ART_FOOD, 3, true);
+        art_scaled(pet.fx, pet.fy, ART_FOOD, 3, 2, true);
     }
     const char *const *spr = (frame & 1) ? PET_A : PET_B;
     int yy = pet.y;
@@ -358,36 +358,43 @@ static void draw_pet(void) {
         px(pet.x - 3, yy + ((frame & 1) ? 0 : 2), true);
         px(pet.x + 6, yy + ((frame & 1) ? 2 : 0), true);
     }
-    art(pet.x, yy, spr, 4, true);
+    art_scaled(pet.x, yy, spr, 4, 2, true);
 }
 
 /* ---------- top bar (6 px tall) and popup ---------- */
 static const char *const ART_BT[6] = {"..#..", "..##.", "#.#.#", ".###.", "..##.", "..#.."};
 
+
 static void draw_battery(int x, uint8_t soc) {
     for (int i = 0; i < 10; i++) {
-        px(x + i, 0, true);
-        px(x + i, 5, true);
+        rect(x + i * 2, 0, 2, 2, true);
+        rect(x + i * 2, 10, 2, 2, true);
     }
+
     for (int j = 0; j < 6; j++) {
-        px(x, j, true);
-        px(x + 9, j, true);
+        rect(x, j * 2, 2, 2, true);
+        rect(x + 18, j * 2, 2, 2, true);
     }
-    px(x + 10, 2, true);
-    px(x + 10, 3, true);
+
+    rect(x + 20, 4, 2, 4, true);
+
     int fill = (soc * 8 + 50) / 100;
     if (soc > 0 && fill == 0) {
         fill = 1;
     }
-    rect(x + 1, 1, fill, 4, true);
+
+    rect(x + 2, 2, fill * 2, 8, true);
 }
+
+
 
 static void draw_top(void) {
     if (zmk_ble_active_profile_is_connected() || ((frame >> 1) & 1)) {
-        art(0, 0, ART_BT, 6, true);
+        art_scaled(0, 0, ART_BT, 6, 2, true);
     }
+
     char d[2] = {'1' + zmk_ble_active_profile_index(), 0};
-    text(7, 0, d, 1, true);
+    text(12, 0, d, 1, true);
 
     if (zmk_keymap_layer_active(1)) {
         rect(58, 0, 9, 6, true);
@@ -397,9 +404,11 @@ static void draw_top(void) {
     uint8_t soc = zmk_battery_state_of_charge();
     char b[8];
     snprintf(b, sizeof(b), "%u%%", soc);
-    draw_battery(117, soc);
-    text(117 - 2 - text_w(b, 1), 0, b, 1, true);
+
+    draw_battery(105, soc);
+    text(103 - text_w(b, 1), 0, b, 1, true);
 }
+
 
 static void draw_popup(void) {
     char l2[24];
