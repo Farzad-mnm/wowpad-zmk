@@ -66,6 +66,20 @@ static void art(int x, int y, const char *const *rows, int n, bool on) {
     }
 }
 
+
+static void art_scaled(int x, int y, const char *const *rows,
+                       int n, int scale, bool on) {
+    for (int r = 0; r < n; r++) {
+        for (int c = 0; rows[r][c]; c++) {
+            if (rows[r][c] == '#') {
+                rect(x + c * scale, y + r * scale,
+                     scale, scale, on);
+            }
+        }
+    }
+}
+
+
 /* ---------- 3x5 font ---------- */
 static const uint8_t F_DIG[10][5] = {
     {7, 5, 5, 5, 7}, {2, 6, 2, 2, 7}, {7, 1, 7, 4, 7}, {7, 1, 7, 1, 7}, {5, 5, 7, 1, 1},
