@@ -22,19 +22,20 @@
 
 #define W 128
 #define H 64
-#define STRIDE (W / 8)
 #define LED_COUNT 2
 
 /* ---------- 1-bit framebuffer shown as an LVGL image ---------- */
-static uint8_t fb[STRIDE * H];
+static lv_color_t fb[W * H]; /* 1 byte per pixel at 1-bit color depth */
+#define INK_COLOR (INVERT_COLORS ? lv_color_white() : lv_color_black())
+#define BG_COLOR (INVERT_COLORS ? lv_color_black() : lv_color_white())
 static lv_img_dsc_t fb_dsc = {
-    .header.cf = LV_IMG_CF_ALPHA_1BIT,
+    .header.cf = LV_IMG_CF_TRUE_COLOR,
     .header.always_zero = 0,
     .header.reserved = 0,
     .header.w = W,
     .header.h = H,
     .data_size = sizeof(fb),
-    .data = fb,
+    .data = (const uint8_t *)fb,
 };
 static lv_obj_t *img;
 static uint32_t frame;
@@ -44,12 +45,7 @@ static void px(int x, int y, bool on) {
     if (x < 0 || x >= W || y < 0 || y >= H) {
         return;
     }
-    uint8_t m = 0x80 >> (x & 7);
-    if (on) {
-        fb[y * STRIDE + (x >> 3)] |= m;
-    } else {
-        fb[y * STRIDE + (x >> 3)] &= ~m;
-    }
+    fb[y * W + x] = on ? INK_COLOR : BG_COLOR;
 }
 
 static void rect(int x, int y, int w, int h, bool on) {
@@ -430,7 +426,9 @@ static void draw_popup(void) {
 }
 
 static void render(void) {
-    memset(fb, 0, sizeof(fb));
+    for (int i = 0; i < W * H; i++) {
+        fb[i] = BG_COLOR;
+    }
     draw_pet();
     if (k_uptime_get() < popup_until) {
         draw_popup();
@@ -452,8 +450,7 @@ static void tick_cb(struct k_work *work) {
 
 #if defined(CONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM)
 lv_obj_t *zmk_display_status_screen(void) {
-    lv_color_t ink = INVERT_COLORS ? lv_color_white() : lv_color_black();
-    lv_color_t bg = INVERT_COLORS ? lv_color_black() : lv_color_white();
+    lv_color_t bg = BG_COLOR;
 
     lv_obj_t *screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(screen, bg, 0);
@@ -462,8 +459,6 @@ lv_obj_t *zmk_display_status_screen(void) {
     img = lv_img_create(screen);
     lv_img_set_src(img, &fb_dsc);
     lv_obj_align(img, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_obj_set_style_img_recolor(img, ink, 0);
-    lv_obj_set_style_img_recolor_opa(img, LV_OPA_COVER, 0);
 
     rs ^= k_uptime_get_32();
     pet.next_food = k_uptime_get() + 20000;
