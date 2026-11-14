@@ -420,7 +420,7 @@ static void draw_top(void) {
     snprintf(b, sizeof(b), "%u%%", soc);
 
     draw_battery(105, soc);
-    text(103 - text_w(b, 2), 0, b, 1, true);
+    text(103 - text_w(b, 2), 0, b, 2, true);
 }
 
 
